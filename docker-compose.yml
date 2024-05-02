@@ -1,0 +1,106 @@
+version: '3.8'
+services:
+  # create-db:
+  #   image: jambonz/db-create:latest
+  #   restart: no
+  #   environment:
+  #     JWT_SECRET: ${JWT_SECRET}
+  #     ENCRYPTION_SECRET: ${ENCRYPTION_SECRET}
+  #     HTTP_PORT: ${HTTP_PORT}
+  #     JAMBONES_LOGLEVEL: ${JAMBONES_LOGLEVEL}
+  #     JAMBONES_MYSQL_HOST: mysql
+  #     JAMBONES_MYSQL_USER: ${JAMBONES_MYSQL_USER}
+  #     JAMBONES_MYSQL_PASSWORD: ${JAMBONES_MYSQL_PASSWORD}
+  #     JAMBONES_MYSQL_DATABASE: ${JAMBONES_MYSQL_DATABASE}
+  #     JAMBONES_MYSQL_PORT: ${JAMBONES_MYSQL_PORT}
+  #     JAMBONES_MYSQL_CONNECTION_LIMIT: ${JAMBONES_MYSQL_CONNECTION_LIMIT}
+  #     JAMBONES_REDIS_HOST: ${JAMBONES_REDIS_HOST}
+  #     JAMBONES_REDIS_PORT: ${JAMBONES_REDIS_PORT}
+  #     JAMBONES_TIME_SERIES_HOST: ${JAMBONES_TIME_SERIES_HOST}
+  mysql:
+    image: mysql:8.0.35
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    volumes:
+      - mysql_volume:/var/lib/mysql
+  jambonz:
+    image: drachtio/drachtio-server:0.8.24
+    restart: unless-stopped
+    ports: 
+      - "9022:9022"
+      - "5060:5060"
+      - "5060:5060/udp"
+    environment:
+      CLOUD: none
+      IMDSv2: 0
+      SOFIA_SEARCH_DOMAINS: 1
+      SOFIA_SRES_NO_CACHE: 1
+      DRACHTIO_SECRET: ${DRACHTIO_SECRET}
+  freeswitch:
+    image: drachtio/drachtio-freeswitch-mrf:0.5.6
+    restart: unless-stopped
+    ports:
+      - "8022:8021"
+    expose: 
+      - "5060"
+      - "5060/udp"
+    volumes:
+      - ./freeswitch_conf/conf:/usr/local/freeswitch/conf
+    environment:
+      MOD_AUDIO_FORK_SUBPROTOCOL_NAME: audio.jambonz.org
+      MOD_AUDIO_FORK_SERVICE_THREADS: 1
+      MOD_AUDIO_FORK_BUFFER_SECS: 3
+  api:
+    image: jambonz/api-server:0.8.5
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      HTTP_PORT: 3000
+      K8S: 0
+      K8S_FEATURE_SERVER_SERVICE_PORT: 4000
+      K8S_FEATURE_SERVER_SERVICE_NAME: host.docker.internal
+      JWT_SECRET: ${JWT_SECRET}
+      ENCRYPTION_SECRET: ${ENCRYPTION_SECRET}
+      JAMBONES_LOGLEVEL: ${JAMBONES_LOGLEVEL}
+      JAMBONES_TIME_SERIES_HOST: ${JAMBONES_TIME_SERIES_HOST}
+      JAMBONES_MYSQL_HOST: mysql
+      JAMBONES_MYSQL_USER: ${JAMBONES_MYSQL_USER}
+      JAMBONES_MYSQL_PASSWORD: ${JAMBONES_MYSQL_PASSWORD}
+      JAMBONES_MYSQL_DATABASE: ${JAMBONES_MYSQL_DATABASE}
+      JAMBONES_MYSQL_PORT: ${JAMBONES_MYSQL_PORT}
+      JAMBONES_MYSQL_CONNECTION_LIMIT: ${JAMBONES_MYSQL_CONNECTION_LIMIT}
+      JAMBONES_REDIS_HOST: host.docker.internal
+      JAMBONES_REDIS_PORT: ${JAMBONES_REDIS_PORT}
+
+  webapp:
+    image: jambonz/webapp:0.8.5
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      API_BASE_URL: http://localhost:3000/v1
+      HTTP_PORT: 3001
+      JAMBONES_API_BASE_URL: http://localhost:${HTTP_PORT}
+      DISABLE_CALL_RECORDING: true
+      NODE_OPTIONS: --openssl-legacy-provider
+    ports:
+      - "3001:3001"
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+
+volumes:
+  mysql_volume:
+  redis_data:
