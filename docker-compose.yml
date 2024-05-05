@@ -42,6 +42,90 @@ services:
       SOFIA_SEARCH_DOMAINS: 1
       SOFIA_SRES_NO_CACHE: 1
       DRACHTIO_SECRET: ${DRACHTIO_SECRET}
+  sidecar:
+    image: jambonz/sbc-sip-sidecar:0.8.5
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      K8S: ${K8S}
+      JAMBONES_REGBOT_CONTACT_USE_IP: 1
+      JAMBONES_LOGLEVEL: ${JAMBONES_LOGLEVEL}
+      JAMBONES_REDIS_HOST: ${JAMBONES_REDIS_HOST}
+      JAMBONES_REDIS_PORT: ${JAMBONES_REDIS_PORT}
+      JAMBONES_TIME_SERIES_HOST: influx
+      JAMBONES_MYSQL_HOST: mysql
+      JAMBONES_MYSQL_USER: ${JAMBONES_MYSQL_USER}
+      JAMBONES_MYSQL_PASSWORD: ${JAMBONES_MYSQL_PASSWORD}
+      JAMBONES_MYSQL_DATABASE: ${JAMBONES_MYSQL_DATABASE}
+      JAMBONES_MYSQL_PORT: ${JAMBONES_MYSQL_PORT}
+      JAMBONES_MYSQL_CONNECTION_LIMIT: ${JAMBONES_MYSQL_CONNECTION_LIMIT}
+      DRACHTIO_HOST: jambonz
+      DRACHTIO_PORT: 9022
+      DRACHTIO_SECRET: ${DRACHTIO_SECRET}
+      JWT_SECRET: ${JWT_SECRET}
+  sbc-call-router:
+    image: jambonz/sbc-call-router:0.8.5
+    restart: unless-stopped
+    expose:
+      - 5000
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      K8S: ${K8S}
+      JAMBONES_LOGLEVEL: ${JAMBONES_LOGLEVEL}
+      K8S_SBC_INBOUND_SERVICE_NAME: sbc-inbound:4000
+      K8S_SBC_OUTBOUND_SERVICE_NAME: sbc-outbound:4000
+      HTTP_PORT: 5000
+  sbc-inbound:
+    image: jambonz/sbc-inbound:0.8.5
+    restart: unless-stopped
+    expose:
+      - 4000
+    environment:
+      HTTP_PORT: 4000
+      NODE_ENV: ${NODE_ENV}
+      K8S: ${K8S}
+      JAMBONES_REGBOT_CONTACT_USE_IP: 1
+      JAMBONES_LOGLEVEL: ${JAMBONES_LOGLEVEL}
+      JAMBONES_REDIS_HOST: redis
+      JAMBONES_REDIS_PORT: ${JAMBONES_REDIS_PORT}
+      JAMBONES_TIME_SERIES_HOST: influx
+      JAMBONES_MYSQL_HOST: mysql
+      JAMBONES_MYSQL_USER: ${JAMBONES_MYSQL_USER}
+      JAMBONES_MYSQL_PASSWORD: ${JAMBONES_MYSQL_PASSWORD}
+      JAMBONES_MYSQL_DATABASE: ${JAMBONES_MYSQL_DATABASE}
+      JAMBONES_MYSQL_PORT: ${JAMBONES_MYSQL_PORT}
+      JAMBONES_MYSQL_CONNECTION_LIMIT: ${JAMBONES_MYSQL_CONNECTION_LIMIT}
+      DRACHTIO_HOST: jambonz
+      DRACHTIO_PORT: 9022
+      DRACHTIO_SECRET: ${DRACHTIO_SECRET}
+      JWT_SECRET: ${JWT_SECRET}
+      K8S_FEATURE_SERVER_SERVICE_NAME: host.docker.internal
+  sbc-outbound:
+    image: jambonz/sbc-outbound:0.8.5
+    restart: unless-stopped
+    expose:
+      - 4000
+    environment:
+      HTTP_PORT: 4000
+      NODE_ENV: ${NODE_ENV}
+      K8S: ${K8S}
+      JAMBONES_REGBOT_CONTACT_USE_IP: 1
+      JAMBONES_LOGLEVEL: ${JAMBONES_LOGLEVEL}
+      JAMBONES_REDIS_HOST: redis
+      JAMBONES_REDIS_PORT: ${JAMBONES_REDIS_PORT}
+      JAMBONES_TIME_SERIES_HOST: influx
+      JAMBONES_MYSQL_HOST: mysql
+      JAMBONES_MYSQL_USER: ${JAMBONES_MYSQL_USER}
+      JAMBONES_MYSQL_PASSWORD: ${JAMBONES_MYSQL_PASSWORD}
+      JAMBONES_MYSQL_DATABASE: ${JAMBONES_MYSQL_DATABASE}
+      JAMBONES_MYSQL_PORT: ${JAMBONES_MYSQL_PORT}
+      JAMBONES_MYSQL_CONNECTION_LIMIT: ${JAMBONES_MYSQL_CONNECTION_LIMIT}
+      DRACHTIO_HOST: jambonz
+      DRACHTIO_PORT: 9022
+      DRACHTIO_SECRET: ${DRACHTIO_SECRET}
+      JWT_SECRET: ${JWT_SECRET}
+      K8S_FEATURE_SERVER_SERVICE_NAME: host.docker.internal
+
   freeswitch:
     image: drachtio/drachtio-freeswitch-mrf:0.5.6
     restart: unless-stopped
@@ -70,7 +154,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       ENCRYPTION_SECRET: ${ENCRYPTION_SECRET}
       JAMBONES_LOGLEVEL: ${JAMBONES_LOGLEVEL}
-      JAMBONES_TIME_SERIES_HOST: ${JAMBONES_TIME_SERIES_HOST}
+      JAMBONES_TIME_SERIES_HOST: influx
       JAMBONES_MYSQL_HOST: mysql
       JAMBONES_MYSQL_USER: ${JAMBONES_MYSQL_USER}
       JAMBONES_MYSQL_PASSWORD: ${JAMBONES_MYSQL_PASSWORD}
@@ -100,6 +184,12 @@ services:
       - '6379:6379'
     volumes:
       - redis_data:/data
+  
+  influx:
+    image: influxdb:1.8
+    restart: unless-stopped
+    ports:
+      - '8086:8086'
 
 volumes:
   mysql_volume:
