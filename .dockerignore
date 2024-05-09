@@ -1,0 +1,4 @@
+.env
+freeswitch_conf/
+node_modules/
+.vscode/
