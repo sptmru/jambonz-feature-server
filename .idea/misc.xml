@@ -4,7 +4,4 @@
     <option name="myConfigurationMode" value="AUTOMATIC" />
     <option name="myRunOnSave" value="true" />
   </component>
-  <component name="VcsManagerConfiguration">
-    <option name="CHECK_LOCALLY_CHANGED_CONFLICTS_IN_BACKGROUND" value="true" />
-  </component>
 </project>
