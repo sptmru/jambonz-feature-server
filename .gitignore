@@ -43,5 +43,6 @@ test/credentials/*.json
 run-tests.sh
 run-coverage.sh
 .vscode
+.idea
 
 freeswitch_conf
