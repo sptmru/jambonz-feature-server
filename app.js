@@ -9,6 +9,7 @@ const {
   getCleanupIntervalMins,
   K8S,
   NODE_ENV,
+  K8S_POD_IP,
   checkEnvs,
 } = require('./lib/config');
 
@@ -89,6 +90,7 @@ const healthCheck = require('@jambonz/http-health-check');
 let httpServer;
 
 const createHttpListener = require('./lib/utils/http-listener');
+const {FsStatusApiWrapper} = require('./lib/utils/fs-status-api');
 createHttpListener(logger, srf)
   .then(({server, app}) => {
     httpServer = server;
@@ -115,7 +117,7 @@ const disconnect = () => {
 
 process.on('SIGTERM', handle);
 
-function handle(signal) {
+async function handle(signal) {
   const {removeFromSet} = srf.locals.dbHelpers;
   srf.locals.disabled = true;
   logger.info(`got signal ${signal}`);
@@ -135,6 +137,7 @@ function handle(signal) {
   }
   if (getCount() === 0) {
     logger.info('no calls in progress, exiting');
+    await FsStatusApiWrapper.deleteInstanceData(K8S_POD_IP);
     process.exit(0);
   }
 }
