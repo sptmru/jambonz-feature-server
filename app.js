@@ -29,8 +29,6 @@ const {LifeCycleEvents, FS_UUID_SET_NAME} = require('./lib/utils/constants');
 const installSrfLocals = require('./lib/utils/install-srf-locals');
 installSrfLocals(srf, logger);
 
-const sessionTrackerFactory = require('./lib/session/session-tracker');
-
 const {
   initLocals,
   createRootSpan,
@@ -79,7 +77,7 @@ srf.invite(async(req, res) => {
   session.exec();
 });
 
-const sessionTracker = srf.locals.sessionTracker = sessionTrackerFactory(srf);
+const sessionTracker = srf.locals.sessionTracker = require('./lib/session/session-tracker');
 sessionTracker.on('idle', () => {
   if (srf.locals.lifecycleEmitter.operationalState === LifeCycleEvents.ScaleIn) {
     logger.info('scale-in complete now that calls have dried up');
