@@ -12,11 +12,11 @@ const sleep = (ms) => {
 
   try {
     do {
-      await FsStatusApiWrapper.deleteInstanceData(K8S_POD_IP);
       const obj = await getJSON(`http://127.0.0.1:${PORT}/`);
       const {calls} = obj;
       if (calls === 0) {
         console.log('no calls on the system, we can exit');
+        void FsStatusApiWrapper.deleteInstanceData(K8S_POD_IP);
         process.exit(0);
       }
       else {
