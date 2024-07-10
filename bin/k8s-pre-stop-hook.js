@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 const bent = require('bent');
 const getJSON = bent('json');
-const {PORT} = require('../lib/config')
+const {PORT, K8S_POD_IP} = require('../lib/config');
+const {FsStatusApiWrapper} = require('../lib/utils/fs-status-api');
 
 const sleep = (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -11,6 +12,7 @@ const sleep = (ms) => {
 
   try {
     do {
+      await FsStatusApiWrapper.deleteInstanceData(K8S_POD_IP);
       const obj = await getJSON(`http://127.0.0.1:${PORT}/`);
       const {calls} = obj;
       if (calls === 0) {
