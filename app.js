@@ -78,19 +78,13 @@ srf.invite(async(req, res) => {
 });
 
 const sessionTrackerFactory = require('./lib/session/session-tracker');
-const sessionTracker = srf.locals.sessionTracker = sessionTrackerFactory({
-  incrementFreeswitchCalls: srf.locals.incrementFreeswitchCalls,
-  decrementFreeswitchCalls: srf.locals.decrementFreeswitchCalls,
-  logger: logger
-});
-
+const sessionTracker = srf.locals.sessionTracker = sessionTrackerFactory(srf);
 sessionTracker.on('idle', () => {
   if (srf.locals.lifecycleEmitter.operationalState === LifeCycleEvents.ScaleIn) {
     logger.info('scale-in complete now that calls have dried up');
     srf.locals.lifecycleEmitter.scaleIn();
   }
 });
-
 const getCount = () => sessionTracker.count;
 const healthCheck = require('@jambonz/http-health-check');
 let httpServer;
@@ -105,6 +99,7 @@ createHttpListener(logger, srf)
   .catch((err) => {
     logger.error(err, 'Error creating http listener');
   });
+
 
 setInterval(() => {
   srf.locals.stats.gauge('fs.sip.calls.count', sessionTracker.count);
