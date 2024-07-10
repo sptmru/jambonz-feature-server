@@ -158,4 +158,4 @@ if (JAMBONZ_CLEANUP_INTERVAL_MINS) {
   }, getCleanupIntervalMins());
 }
 
-module.exports = {srf, logger, disconnect, sessionTracker};
+module.exports = {srf, logger, disconnect};
