@@ -20,4 +20,7 @@ ARG NODE_ENV
 
 ENV NODE_ENV $NODE_ENV
 
+RUN /bin/chmod +x /opt/app/bin/k8s-pre-stop-hook.js
+RUN /bin/chmod +x /opt/app/bin/k8s-post-start-hook.js
+
 CMD [ "node", "app.js" ]
