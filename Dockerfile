@@ -7,7 +7,6 @@ FROM base as build
 COPY package.json package-lock.json ./
 
 RUN npm ci
-
 COPY . .
 
 FROM base
